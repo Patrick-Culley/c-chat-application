@@ -3,6 +3,8 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
+#include <strings.h>
+
 
 
 int main()
@@ -20,10 +22,16 @@ int main()
     struct sockaddr_in address; 
     address.sin_family = AF_INET; 
     address.sin_port = htons(3000);
-    address.sin_addr.s_addr = inet_aton(ip_addr, &address.sin_addr);
+    inet_aton(ip_addr, &address.sin_addr);
+    // Assign a name to socket 
 
-    
+    int bind_ip = bind(socket_fd, (struct sockaddr*)&address, sizeof(address));
 
-    printf("%d\n\n", socket_fd);
+    if (bind_ip == -1)
+    {
+        perror("ERROR --> ");
+    }
+
+    printf("%d\n\n", bind_ip);
     return 0;
 }
