@@ -4,10 +4,14 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <strings.h>
+#include <unistd.h>
 
 
 int main()
 {
+    char buffer[255];
+    int valread;
+
     // Setup socket connection for IPv4 
     int socket_fd = socket(AF_INET, SOCK_STREAM, 0);
     char *ip_addr = "127.0.0.1";
@@ -40,9 +44,16 @@ int main()
 
     // Accept incoming connection requests 
     int accept_con; 
-    printf("CONNECTED TO SERVER");
     accept_con = accept(socket_fd, NULL, NULL);
 
-    printf("%d\n\n", bind_ip);
+    if (accept_con < 0)
+    {
+        perror("ACCEPT ERROR: "); 
+    }; 
+
+    // Read from connection to char buffer 
+    valread = read(accept_con, buffer, 255);
+    printf("%s\n", buffer);
+
     return 0;
 }
