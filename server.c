@@ -9,12 +9,14 @@
 
 int main()
 {
-    char buffer[255];
+    char buffer[1028];
+    char output[1028];
     int valread;
 
     // Setup socket connection for IPv4 
     int socket_fd = socket(AF_INET, SOCK_STREAM, 0);
-    char *ip_addr = "127.0.0.1";
+    char *ip_addr = "127.0.0.2";
+    char *message = "This is a message from the server. ";
 
     if (socket_fd < 0)
     {
@@ -23,8 +25,8 @@ int main()
 
     struct sockaddr_in address; 
     address.sin_family = AF_INET; 
-    address.sin_port = htons(3000);
-    inet_aton(ip_addr, &address.sin_addr);
+    address.sin_port = htons(3001);
+    address.sin_addr.s_addr = INADDR_ANY;
     
     // Assign name to socket 
     int bind_ip = bind(socket_fd, (struct sockaddr*)&address, sizeof(address));
@@ -42,18 +44,25 @@ int main()
         perror("LISTENING ERROR: ");
     };
 
+    // Create Client struct 
+    struct sockaddr_in client_address; 
+    client_address.sin_family = AF_INET; 
+    client_address.sin_port = htons(3001);
+    inet_aton("127.0.0.2", &client_address.sin_addr);
+
     // Accept incoming connection requests 
     int accept_con; 
-    accept_con = accept(socket_fd, NULL, NULL);
+    socklen_t client_addr_size = sizeof(struct sockaddr_in);
+    accept_con = accept(socket_fd, (struct sockaddr*)&client_address, &client_addr_size);
 
-    if (accept_con < 0)
+    if (accept_con < 0) 
     {
         perror("ACCEPT ERROR: "); 
     }; 
 
     // Read from connection to char buffer 
-    valread = read(accept_con, buffer, 255);
-    printf("%s\n", buffer);
+    valread = read(accept_con, buffer, 1028);
+    printf("%s", buffer);
 
     return 0;
 }
