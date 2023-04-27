@@ -11,7 +11,7 @@ int main()
 {   
     char buffer[1028];
     int valread; 
-    char* message="This is a message from your computer client. How are you today?\0";
+    char* message="This is a message from the CLIENT. How are you today?\0";
 
     // Create socket 
     int socket_fd = socket(AF_INET, SOCK_STREAM, 0);

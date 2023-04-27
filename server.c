@@ -4,6 +4,7 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <strings.h>
+#include <string.h>
 #include <unistd.h>
 
 
@@ -11,7 +12,7 @@ int main()
 {
     char buffer[1028];
     char output[1028];
-    int valread;
+    int read_buf;
 
     // Setup socket connection for IPv4 
     int socket_fd = socket(AF_INET, SOCK_STREAM, 0);
@@ -23,10 +24,10 @@ int main()
         printf("SOCKET ERROR: ");
     };
 
-    struct sockaddr_in address; 
+    struct sockaddr_in address, client_address; 
     address.sin_family = AF_INET; 
     address.sin_port = htons(3001);
-    address.sin_addr.s_addr = INADDR_ANY;
+    inet_aton("127.0.0.2", &address.sin_addr);
     
     // Assign name to socket 
     int bind_ip = bind(socket_fd, (struct sockaddr*)&address, sizeof(address));
@@ -44,12 +45,6 @@ int main()
         perror("LISTENING ERROR: ");
     };
 
-    // Create Client struct 
-    struct sockaddr_in client_address; 
-    client_address.sin_family = AF_INET; 
-    client_address.sin_port = htons(3001);
-    inet_aton("127.0.0.2", &client_address.sin_addr);
-
     // Accept incoming connection requests 
     int accept_con; 
     socklen_t client_addr_size = sizeof(struct sockaddr_in);
@@ -59,10 +54,17 @@ int main()
     {
         perror("ACCEPT ERROR: "); 
     }; 
-
-    // Read from connection to char buffer 
-    valread = read(accept_con, buffer, 1028);
-    printf("%s", buffer);
-
+    
+    int res;
+    while (1)
+    {
+        // Read from client 
+        read_buf = read(accept_con, buffer, 1028);
+        printf("%s", buffer); 
+        bzero(buffer, 1028);
+        fgets(buffer, sizeof(buffer),stdin);
+        res = write(accept_con, buffer, strlen(buffer));
+    };
+     
     return 0;
 }
