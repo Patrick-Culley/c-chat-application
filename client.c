@@ -36,10 +36,18 @@ int main()
     {
         perror("CONNECTION ERROR ");    
     };
-  
-    write(socket_fd, message, strlen(message)); 
-    read(connection, buffer, 1028);
-    printf("%d", connection);
+    int wr, re, pr; 
+    while (1)
+    {
+        wr = write(socket_fd, message, strlen(message)); 
+        if (wr < 0)
+            perror("WRITE ERROR: "); 
+        bzero(buffer, 1028);
+        re = read(socket_fd, buffer, 1028);
+        if (re < 0) 
+            perror("READ ERROR: "); 
+        pr = printf("%s", buffer);
+    };
 
     return 0; 
 };

@@ -61,8 +61,8 @@ int main()
         read_buf = read(accept_con, buffer, 1028);
         printf("%s\n", buffer); 
         bzero(buffer, 1028);
-        fgets(buffer, sizeof(buffer),stdin);
-        write(accept_con, message, strlen(message));
+        fgets(buffer, sizeof(buffer), stdin);
+        write(accept_con, buffer, strlen(buffer));
     };
 
     return 0;
