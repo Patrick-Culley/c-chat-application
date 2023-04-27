@@ -11,11 +11,10 @@ int main()
 {   
     char buffer[1028];
     int valread; 
-    char* message="This is a message from the CLIENT. How are you today?\0";
+    char* message="This is a message from the CLIENT. How are you today? \0";
 
     // Create socket 
     int socket_fd = socket(AF_INET, SOCK_STREAM, 0);
-    char *ip_addr = "127.0.0.2";
 
     if (socket_fd < 0)
     {
@@ -25,7 +24,7 @@ int main()
     struct sockaddr_in address; 
     address.sin_family = AF_INET; 
     address.sin_port = htons(3001);
-    inet_aton(ip_addr, &address.sin_addr);
+    address.sin_addr.s_addr = INADDR_ANY;
     
     // Assign name to socket 
     int bind_ip = bind(socket_fd, (struct sockaddr*)&address, sizeof(address));
@@ -33,13 +32,13 @@ int main()
     // Connect 
     int connection = connect(socket_fd, (struct sockaddr*)&address, sizeof(address));
 
-    write(socket_fd, message, strlen(message));
-    
     if (connection < 0)
     {
-        perror("CONNECTION ERROR ");
+        perror("CONNECTION ERROR ");    
     };
-
+  
+    write(socket_fd, message, strlen(message)); 
+    read(connection, buffer, 1028);
     printf("%d", connection);
 
     return 0; 
