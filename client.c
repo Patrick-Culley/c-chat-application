@@ -11,7 +11,6 @@ int main()
 {   
     char buffer[1028];
     int valread; 
-    char* message="This is a message from the CLIENT. How are you today? \0";
 
     // Create socket 
     int socket_fd = socket(AF_INET, SOCK_STREAM, 0);
@@ -37,16 +36,19 @@ int main()
         perror("CONNECTION ERROR ");    
     };
     int wr, re, pr; 
+    printf("Connected to Chat!\nType 'later' to quit.");
     while (1)
-    {
-        wr = write(socket_fd, message, strlen(message)); 
+    {   
+        fgets(buffer, sizeof(buffer), stdin);
+        wr = write(socket_fd, buffer, strlen(buffer)); 
         if (wr < 0)
             perror("WRITE ERROR: "); 
         bzero(buffer, 1028);
         re = read(socket_fd, buffer, 1028);
         if (re < 0) 
             perror("READ ERROR: "); 
-        pr = printf("%s", buffer);
+        pr = printf("Server: %s", buffer);
+        bzero(buffer, 1028);
     };
 
     return 0; 

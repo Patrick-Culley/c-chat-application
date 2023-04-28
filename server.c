@@ -6,17 +6,22 @@
 #include <strings.h>
 #include <string.h>
 #include <unistd.h>
+#include <pthread.h> // Library for threading functions 
 
 
 int main()
 {
+    pthread_t tid[60];
     char buffer[1028];
     char output[1028];
-    int read_buf;
+    int read_buf, t_num;
+
+    // Create a thread for practice 
+    int pthread_create(pthread_t *thread, const pthread_attr_t *attr,
+                          void *(*start_routine) (void *), void *arg);
 
     // Setup socket connection for IPv4 
     int socket_fd = socket(AF_INET, SOCK_STREAM, 0);
-    char *message = "This is a message from the server. ";
 
     if (socket_fd < 0)
     {
@@ -59,11 +64,12 @@ int main()
     {
         // Read from clients
         read_buf = read(accept_con, buffer, 1028);
-        printf("%s\n", buffer); 
+        printf("Client: %s", buffer); 
         bzero(buffer, 1028);
         fgets(buffer, sizeof(buffer), stdin);
         write(accept_con, buffer, strlen(buffer));
-    };
+        bzero(buffer, 1028);
+    };  
 
     return 0;
 }
