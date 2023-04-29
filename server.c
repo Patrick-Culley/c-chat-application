@@ -112,6 +112,7 @@ void *receiver_handler(void *p_connection)
 
     while ((read_size = recv(sock, client_message, 2000, 0)) > 0)
     {
+        // AUTHENTICATION NEW USER // 
         if (!connection->auth)
         {
             strcpy(token, client_message); 
@@ -132,6 +133,27 @@ void *receiver_handler(void *p_connection)
             fprintf(fp, "%s has joined\n", connection->username); 
             
             broadcast(connection, "", 1); 
+
+            connection->auth = 1; 
+        } 
+        // USER AUTHENTICATED // 
+        else {
+            int ie = 0; 
+            for (int i = 0; i <= strlen(client_message); i++){
+                if (client_message[i] == '\n'){
+                    client_message[i] = '\0';
+                }
+                processed_client_message[i] = client_message[i];
+                ie = i;
+            }
+
+            printf("%s: %s\n", connection->username, processed_client_message); 
+            fprintf("%s: %s\n", connection->username, processed_client_message); 
+
+            processed_client_message[ie] = '\n'; 
+            processed_client_message[ie + 1] = '\0'; 
+
+            broadcast(connection, processed_client_message, 0); 
         }
     }
 };
