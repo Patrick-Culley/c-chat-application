@@ -9,6 +9,7 @@
 #include <strings.h>
 #include <string.h>
 #include <unistd.h>
+#include <signal.h>
 #include <pthread.h> // Library for threading functions 
 
 void *connection_handler(void *);
