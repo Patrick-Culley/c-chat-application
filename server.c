@@ -9,11 +9,6 @@ int main(int argc, char *argv[])
     int option = 1;
     struct sockaddr_in client_address; 
 
-    if (argc != 2){
-        printf("Enter Port Number");
-        return -1; 
-    }
-
     port_number = atoi(argv[1]); 
     printf("%d\n", port_number);
     
@@ -74,8 +69,6 @@ int main(int argc, char *argv[])
         pthread_create(&sniffer_thread, NULL, connection_handler, (void*) new_connection);
     };  
 
-    close(socket_fd); 
-    shutdown(socket_fd, SHUT_RDWR);
     return 0;
 }
 
@@ -90,11 +83,17 @@ void *connection_handler(void *p_connection)
         perror("could not create receiving thread");
         return 0;
     }
-
     while (connection->status)
     {
         dummy++;
     }
+
+    // FREE SOCKET POINTER // 
+    broadcast(p_connection, "", 2); 
+    delete_socket(p_connection); 
+    free(p_connection); 
+
+    return 0;
 };
 
 // HANDLES RECEIVER FROM EACH CLIENT - JOINING ROOM // 
@@ -148,7 +147,7 @@ void *receiver_handler(void *p_connection)
             }
 
             printf("%s: %s\n", connection->username, processed_client_message); 
-            fprintf("%s: %s\n", connection->username, processed_client_message); 
+            fprintf(fp, "%s: %s\n", connection->username, processed_client_message); 
 
             processed_client_message[ie] = '\n'; 
             processed_client_message[ie + 1] = '\0'; 
@@ -156,6 +155,20 @@ void *receiver_handler(void *p_connection)
             broadcast(connection, processed_client_message, 0); 
         }
     }
+    // CLIENT DISCONNECTED // 
+    if (read_size == 0)
+    {
+        printYellow(connection->username); 
+        printYellow(" has left\n"); 
+        fprintf(fp, "%s has left\n", connection->username); 
+
+        fflush(stdout); 
+    } else if (read_size == -1) {
+        perror("recv failed");
+    }
+
+    connection->status = 0; 
+    return 0; 
 };
 
 void printYellow(char *string) {
@@ -191,6 +204,30 @@ void add_socket(struct connection_t *socket) {
     }
 }
 
+void delete_socket(struct connection_t *socket)
+{
+    // CHECK IF SOCKET IS HEAD // 
+    if (open_connections == 1 && socket == head){
+        head = NULL; 
+        open_connections --;
+    } else if (socket == head){
+        head = head->next; 
+        open_connections--; 
+    } else if (open_connections > 1){
+        struct connection_t *currentSocket = head;
+        while (currentSocket->next != socket && currentSocket->next != NULL){
+            currentSocket = currentSocket->next;
+        }
+        if (tail == socket){
+            tail = currentSocket; 
+            currentSocket->next = NULL;
+        } else {
+            currentSocket->next = currentSocket->next->next;
+        }
+        open_connections--;
+    }
+};
+
 void broadcast(struct connection_t *socket, char *message, int type)
 {
     char signed_message[strlen(socket->username) + 2 + strlen(message)]; 
@@ -205,7 +242,7 @@ void broadcast(struct connection_t *socket, char *message, int type)
     } else if (type == 1) {
         strcat(signed_message, " has joined\n");
         size += strlen(" has joined\n"); 
-    } else if (type == 1) {
+    } else if (type == 2) {
         strcat(signed_message, " has left\n"); 
         size += strlen(" has left\n"); 
     }
