@@ -4,12 +4,12 @@ int main(int argc, char *argv[])
 {   
     if (argc < 4)
     {
-        printRed("Pass in port number, user name, and password"); 
+        printRed("Pass in port number, user name, and password\n    "); 
         return 1; 
     }
     if (argc > 4)
     {
-        printRed("Only pass in port number, user name, and password"); 
+        printRed("Only pass in port number, user name, and password\n"); 
         return 1; 
     }
 
@@ -53,26 +53,42 @@ int main(int argc, char *argv[])
     pthread_t receiving_thread; 
     int new_socket = socket_fd; 
     int *new_sock;
-    new_socket = malloc(1); 
+    new_sock = malloc(1); 
     *new_sock = new_socket; 
 
     pthread_create(&receiving_thread, NULL, receiver_handler, (void*) new_sock);
 
-    int wr, re, pr; 
-    while (1)
-    {   
-        fgets(buffer, sizeof(buffer), stdin);
-        wr = write(socket_fd, buffer, strlen(buffer)); 
-        if (wr < 0)
-            perror("WRITE ERROR: "); 
-        bzero(buffer, 1028);
-        re = read(socket_fd, buffer, 1028);
-        if (re < 0) 
-            perror("READ ERROR: "); 
-        pr = printf("Server: %s", buffer);
-        bzero(buffer, 1028);
-    };
+    strcpy(auth_token, username);
+    strcat(auth_token, "\n");
 
+    if (send(socket_fd, auth_token, strlen(auth_token), 0) < 0){
+        puts("Log in failed");
+        return 1;
+    }
+
+    while (status)
+    {   
+        char str[message_limit]; 
+        fgets(str, message_limit + 2, stdin); 
+
+        if(!status){
+            return 0;
+        }
+        if (str[0] == '\0' || str[0] == '\n'){
+            printRed("ERROR: You can't send an empty message!"); 
+            fflush(stdin); 
+        } else {
+            fflush(stdin);
+            if (strlen(str) > message_limit){
+                printRed("ERROR: your message cannot exceed 1024 characters!");
+            } else{
+                if (send(socket_fd, str, strlen(str), 0) < 0){
+                    puts("Send failed"); 
+                    return 1; 
+                }
+            }
+        }
+    };
     return 0; 
 };
 
@@ -119,6 +135,18 @@ void printRed(char *string) {
 
 void printBlue(char *string) {
     printf("\033[0;36m");
+    printf("%s", string);
+    printf("\033[0m");
+}
+
+void printMagenta(char *string) {
+    printf("\033[1;35m");
+    printf("%s", string);
+    printf("\033[0m");
+}
+
+void printYellow(char *string) {
+    printf("\033[1;33m");
     printf("%s", string);
     printf("\033[0m");
 }
